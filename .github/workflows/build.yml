@@ -48,7 +48,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: auto_typer_exe
-          path: dist
+          path: .
 
       - name: Create GitHub Release and upload exe
         uses: softprops/action-gh-release@v1
@@ -56,7 +56,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body: "Download auto_typer.exe below to get started. No Python installation required."
-          files: dist/auto_typer.exe
+          files: auto_typer.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
