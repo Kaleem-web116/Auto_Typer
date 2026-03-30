@@ -1,4 +1,4 @@
-name: Build Release
+name: Build and Release
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    outputs:
+      artifact-name: auto_typer_exe
 
     steps:
       - name: Checkout code
@@ -21,22 +23,40 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install -r requirements.txt
           pip install pyinstaller
 
       - name: Build .exe
         run: |
           pyinstaller --onefile --noconsole auto_typer.py
 
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: auto_typer-${{ github.ref_name }}.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: auto_typer_exe
           path: dist/auto_typer.exe
+
+  release:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download built executable artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: auto_typer_exe
+          path: dist
+
+      - name: Create GitHub Release and upload exe
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: "Download auto_typer.exe below to get started. No Python installation required."
+          files: dist/auto_typer.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
